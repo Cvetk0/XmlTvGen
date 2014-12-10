@@ -45,7 +45,9 @@ class EpgDataProvider(object):
         if genre not in self.supgenre:
             raise ValueError('Genre %r not supported' % (genre))
         idx = random.randrange(max_len)
-        duration = int(self.data[lang_list[0]][genre][idx][-1])
+        # Read duration from self.data and round it up/down to 5 minutes
+        duration = int(round(float(self.data[lang_list[0]][genre][idx][-1]) / 5) * 5)
+        # Read title from self.data
         title = self.data[lang_list[0]][genre][idx][0]
         data = {}
         for lang in lang_list:
