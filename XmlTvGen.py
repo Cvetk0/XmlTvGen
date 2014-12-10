@@ -9,7 +9,7 @@ from EpgDataProvider import EpgDataProvider
 from ElementTree_pretty import prettify
 
 class XmlTvGen(object):
-    def __init__(self, lang_list, start_date, end_date, channels, timezone=None):
+    def __init__(self, lang_list, start_date, end_date, channels, datafile, timezone=None):
         """
         Init XmlTvGen object
         :param lang_list:
@@ -21,7 +21,7 @@ class XmlTvGen(object):
         """
         # Supported languages
         self._suplangs = {'en', 'fa'}
-        self._dataprovider = EpgDataProvider('data/movies.csv')
+        self._dataprovider = EpgDataProvider(datafile)
         # Set languages and check if all are supported
         self._langs = lang_list
         for lang in self._langs:
@@ -44,14 +44,14 @@ class XmlTvGen(object):
         # Initialize TV tag of XMLTV
         self._tv = Element('tv')
         # Populate channel data
-        self._last_title = '' # Helper for preventing duplicate succesive shows
+        self._last_title = u'' # Helper for preventing duplicate succesive shows
         for ch in self._channels:
             self._add_channel_tag(ch[0], ch[1])
         for ch in self._channels:
             self._add_channel_programmes(ch[0], ch[2], self._start_date, self._end_date)
 
     def __str__(self):
-        return prettify(self._tv)
+        return prettify(self._tv).encode(encoding='utf-8')
 
     def _add_channel_tag(self, id, display_name_list):
         """
@@ -82,8 +82,9 @@ class XmlTvGen(object):
         while ct < end_time:
             show_start = ct
             data = self._dataprovider.get_random_show(self._langs, channel_genre)
-            if data[1][self._langs[0]][0] != self._last_title:
-                self._last_title = data[1][self._langs[0]][0]
+            # Check data title against _last_title to prevent duplicates
+            if data[2] != self._last_title:
+                self._last_title = data[2]
                 #print 'Adding new programme to ' + ch_id + ', starting: ' + show_start.strftime('%Y-%d-%m %H:%M') + ', ending: ' + show_end.strftime('%Y-%d-%m %H:%M')
                 programme = SubElement(self._tv, 'programme')
                 programme.set('channel', channel_id)
@@ -95,7 +96,8 @@ class XmlTvGen(object):
                     self._add_programme_data(programme, data[1][lang], lang)
                 ct = show_end
             else:
-                print 'Duplicate show %r, not adding it to data structure' % (self._last_title)
+                #print 'Duplicate show %r, not adding it to data structure' % (self._last_title)
+                pass
         # Reset _last_title for next channel
         self._last_title = ''
 
@@ -133,10 +135,11 @@ class XmlTvGen(object):
         # Add category elements
         # TODO
         # Add icon element, do not allow duplicates
-        if len(icon) > 0:
-            if not self._find_item(parent, 'icon', icon):
-                x_icon = SubElement(parent, 'icon')
-                x_icon.text = icon
+        # Currently disabled due to bug in target platform
+        #if len(icon) > 0:
+        #    if not self._find_item(parent, u'icon', icon):
+        #        x_icon = SubElement(parent, u'icon')
+        #        x_icon.text = icon
         # Add director elements, do not allow duplicates
         if len(directors) > 0:
             for director in directors.split(','):
@@ -157,6 +160,9 @@ class XmlTvGen(object):
                 x_url = SubElement(parent, 'url')
                 x_url.text = url
         #print [ x.text for x in parent.iter('actor') ]
+
+    def get_supported_langs(self):
+        return self._suplangs
 
     # Static methods
     @staticmethod
@@ -194,5 +200,5 @@ class XmlTvGen(object):
             return True
         return False
 
-xmltv = XmlTvGen(['en'], '2014-12-9', '2014-12-10', [('Channel2', ['Channel2', 'Ch2'], 'movie')], '+0330')
+#xmltv = XmlTvGen(['en', 'fa'], '2014-12-10', '2014-12-12', [('Channel2', ['Channel2', 'Ch2'], 'movie')], 'data/movies.csv', timezone='+0330')
 #print xmltv

@@ -22,8 +22,9 @@ class EpgDataProvider(object):
         return json.dumps(self.data, indent=4, encoding='utf-8')
 
     def read_data(self, datafile):
-        with io.open(datafile, mode='r') as data:
+        with io.open(datafile, mode='r', encoding='utf-8') as data:
             for line in data.readlines():
+                line.encode(encoding='utf-8')
                 line = line.split(';')
                 # Currently line has to have 14 fields!
                 if len(line) != 14:
@@ -45,10 +46,11 @@ class EpgDataProvider(object):
             raise ValueError('Genre %r not supported' % (genre))
         idx = random.randrange(max_len)
         duration = int(self.data[lang_list[0]][genre][idx][-1])
+        title = self.data[lang_list[0]][genre][idx][0]
         data = {}
         for lang in lang_list:
             data[lang] = self.data[lang][genre][idx][:-1]
-        return (duration, data)
+        return (duration, data, title)
 
 #provider = EpgDataProvider(datafile)
 #print provider
