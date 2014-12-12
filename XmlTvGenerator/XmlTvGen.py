@@ -141,11 +141,11 @@ class XmlTvGen(object):
         # TODO
         # Add category elements
         # TODO
-        # Add icon element, do not allow duplicates
+        # Add icon element if images option was selected    , do not allow duplicates
         if len(icon) > 0 and self._images:
-            if not self._find_item(parent, u'icon', icon):
-                x_icon = SubElement(parent, u'icon')
-                x_icon.text = icon
+            if not self._find_item(parent, 'icon', icon):
+                x_icon = SubElement(parent, 'icon')
+                x_icon.set('src', icon)
         # Add director elements, do not allow duplicates
         if len(directors) > 0:
             for director in directors.split(','):
