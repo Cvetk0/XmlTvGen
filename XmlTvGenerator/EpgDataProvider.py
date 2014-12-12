@@ -53,7 +53,3 @@ class EpgDataProvider(object):
         for lang in lang_list:
             data[lang] = self.data[lang][genre][idx][:-1]
         return (duration, data, title)
-
-#provider = EpgDataProvider(datafile)
-#print provider
-#print provider.get_random_show(['en'], 'movie')

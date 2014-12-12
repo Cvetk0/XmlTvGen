@@ -2,14 +2,19 @@
 """
 XML TV EPG Generator
 """
-from xml.etree.ElementTree import Element, SubElement, Comment, tostring
+from xml.etree.ElementTree import ElementTree, Element, SubElement
 import datetime as dt
 import re
-from EpgDataProvider import EpgDataProvider
-from ElementTree_pretty import prettify
+import io
+import os
+import tarfile as tar
+
+from XmlTvGenerator.EpgDataProvider import EpgDataProvider
+from XmlTvGenerator.ElementTree_pretty import prettify
+
 
 class XmlTvGen(object):
-    def __init__(self, lang_list, start_date, end_date, channels, datafile, timezone=None):
+    def __init__(self, lang_list, start_date, end_date, channels, datafile, timezone=None, images=False):
         """
         Init XmlTvGen object
         :param lang_list:
@@ -22,6 +27,8 @@ class XmlTvGen(object):
         # Supported languages
         self._suplangs = {'en', 'fa'}
         self._dataprovider = EpgDataProvider(datafile)
+        # Useage of images
+        self._images = images
         # Set languages and check if all are supported
         self._langs = lang_list
         for lang in self._langs:
@@ -44,7 +51,7 @@ class XmlTvGen(object):
         # Initialize TV tag of XMLTV
         self._tv = Element('tv')
         # Populate channel data
-        self._last_title = u'' # Helper for preventing duplicate succesive shows
+        self._last_title = '' # Helper for preventing duplicate succesive shows
         for ch in self._channels:
             self._add_channel_tag(ch[0], ch[1])
         for ch in self._channels:
@@ -135,11 +142,10 @@ class XmlTvGen(object):
         # Add category elements
         # TODO
         # Add icon element, do not allow duplicates
-        # Currently disabled due to bug in target platform
-        #if len(icon) > 0:
-        #    if not self._find_item(parent, u'icon', icon):
-        #        x_icon = SubElement(parent, u'icon')
-        #        x_icon.text = icon
+        if len(icon) > 0 and self._images:
+            if not self._find_item(parent, u'icon', icon):
+                x_icon = SubElement(parent, u'icon')
+                x_icon.text = icon
         # Add director elements, do not allow duplicates
         if len(directors) > 0:
             for director in directors.split(','):
@@ -163,6 +169,21 @@ class XmlTvGen(object):
 
     def get_supported_langs(self):
         return self._suplangs
+
+    def write_epg_to_file(self, outfile, pretty=False, archive=False):
+        # Create XML file
+        if not pretty:
+            ElementTree(self._tv).write(outfile, encoding='utf-8')
+        else:
+            with io.open(outfile, mode='w', encoding='utf-8') as file:
+                file.writelines(unicode(prettify(self._tv)))
+        # Create gziped TAR archive if requested
+        if archive:
+            # Archive the outfile
+            with tar.open(outfile.split('.')[0] + '.tar.gz', mode='w:gz') as arch:
+                arch.add(outfile)
+            # Delete outfile as archive was requested
+            os.remove(outfile)
 
     # Static methods
     @staticmethod
@@ -199,6 +220,3 @@ class XmlTvGen(object):
         if name in names:
             return True
         return False
-
-#xmltv = XmlTvGen(['en', 'fa'], '2014-12-10', '2014-12-12', [('Channel2', ['Channel2', 'Ch2'], 'movie')], 'data/movies.csv', timezone='+0330')
-#print xmltv

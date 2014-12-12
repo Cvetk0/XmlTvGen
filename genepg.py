@@ -5,25 +5,26 @@ Generate XML TV
 
 import sys
 import argparse
-import datetime as dt
-from XmlTvGen import XmlTvGen
+from XmlTvGenerator.XmlTvGen     import XmlTvGen
 
-channels = [('Channel1', ['Channel1', 'Ch1'], 'movie')]
+
+channels = [('Channel1', ['Channel1', 'Ch1'], 'movie'),
+            ('Channel2', ['Channel2', 'Ch2'], 'movie')]
 
 
 def main():
-    now = dt.datetime.now()
     parser = argparse.ArgumentParser(prog='genepg.py', description='XML TV EPG generator with multiple languages support',
+                                     epilog='Example usage: %(prog)s -l en fa -t +0330 -o xmltv.tar.gz 2014-12-10 2014-12-12',
                                      formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=200,
                                                                                          width=200))
-    parser.add_argument('-s', '--start', nargs=1, default=now.strftime('%Y-%m-%d'),
-                        help='EPG start date (default: today)')
-    parser.add_argument('-e', '--end', nargs=1, default=(now + dt.timedelta(days=1)).strftime('%Y-%m-%d'),
-                        help='EPG end date (default: today + 1 day)')
+    parser.add_argument('-i', '--images', action='store_true', default=False, help='Add image information to the EPG source')
+    parser.add_argument('-a', '--archive', action='store_true', default=False, help='Archive the epg data in gziped tarbal')
     parser.add_argument('-l', '--langs', nargs='+', default=['en'], help='List of languages (default: en)')
-    parser.add_argument('-t', '--tz', nargs=1, default='+0000', help='Timezone offset (default: +0100)')
-    parser.add_argument('-o', '--output', nargs=1, default='xmltv.tar.gz', help='Output tar.gz archive file, \
-                                                                                 (default: xmltv.tar.gz)')
+    parser.add_argument('-t', '--tz', nargs='?', default='+0000', type=str, help='Timezone offset (default: +0000)')
+    parser.add_argument('-o', '--output', nargs='?', default='xmltv.xml', type=str,
+                        help='Output tar.gz archive file (default: xmltv.xml)')
+    parser.add_argument('START_DATE', type=str, help='EPG start date (format: YEAR-MONTH-DAY)')
+    parser.add_argument('END_DATE', type=str, help='EPG end date (format: YEAR-MONTH-DAY)')
 
     # Print help message if no arguments are passed to the program, otherwise proceed
     if len(sys.argv) == 1:
@@ -33,7 +34,8 @@ def main():
     args = parser.parse_args()
     #print args
 
-    #xmltv = XmlTvGen(args.langs, args.start, args.end, channels, 'data/movies.csv', timezone=args.tz)
+    xmltv = XmlTvGen(args.langs, args.START_DATE, args.END_DATE, channels, 'data/movies.csv', timezone=args.tz, images=args.images)
+    xmltv.write_epg_to_file('xmltv.xml', pretty=True, archive=args.archive)
     #print xmltv
 
 if __name__ == '__main__':
