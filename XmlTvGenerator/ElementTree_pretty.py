@@ -2,7 +2,10 @@ from xml.etree import ElementTree
 from xml.dom import minidom
 
 def prettify(elem):
-    """Return a pretty-printed XML string for the Element.
+    """
+    Return a pretty-printed XML string for the Element.
+    :param elem: XML element
+    :return:
     """
     rough_string = ElementTree.tostring(elem, 'utf-8')
     reparsed = minidom.parseString(rough_string)
