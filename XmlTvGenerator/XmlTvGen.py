@@ -23,7 +23,7 @@ class XmlTvGen(object):
         :param channels: channel list with (channel_name, [display_name_list], genre) tuples
         :param datafile: file containing EPG semicolon separated data
         :param timezone: optional timezone offset eg. +3300, +0100
-        :param images: boolean determining if image data should be included in the programme tage
+        :param images: boolean determining if image data should be included in the programme tag
         :return:
         """
         # Supported languages
