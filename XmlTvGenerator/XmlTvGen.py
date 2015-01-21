@@ -17,11 +17,13 @@ class XmlTvGen(object):
     def __init__(self, lang_list, start_date, end_date, channels, datafile, timezone=None, images=False):
         """
         Init XmlTvGen object
-        :param lang_list:
+        :param lang_list: list of languages requested in EPG output
         :param start_date: start date in format %Y-%m-%d eg. 2014-12-06
         :param end_date: end date in format %Y-%m-%d eg. 2014-12-06
         :param channels: channel list with (channel_name, [display_name_list], genre) tuples
+        :param datafile: file containing EPG semicolon separated data
         :param timezone: optional timezone offset eg. +3300, +0100
+        :param images: boolean determining if image data should be included in the programme tage
         :return:
         """
         # Supported languages
