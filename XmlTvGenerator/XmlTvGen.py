@@ -53,7 +53,7 @@ class XmlTvGen(object):
         # Initialize TV tag of XMLTV
         self._tv = Element('tv')
         # Populate channel data
-        self._last_title = '' # Helper for preventing duplicate succesive shows
+        self._last_title = '' # Helper for preventing duplicate successive shows
         for ch in self._channels:
             self._add_channel_tag(ch[0], ch[1])
         for ch in self._channels:
@@ -99,6 +99,11 @@ class XmlTvGen(object):
                 programme.set('channel', channel_id)
                 programme.set('start', show_start.strftime('%Y%m%d%H%M%S') + ' ' + self._tz)
                 show_end = ct + dt.timedelta(minutes=data[0])
+                # Check if show's end time exceeds desired end time and modify it to end at midnight, we want clean cut!
+                if show_end > end_time:
+                    #print "Show end is %s, requested end time is %s, this is the last show!" % (show_end.strftime('%Y%m%d%H%M%S'), end_time.strftime('%Y%m%d%H%M%S'))
+                    #print "Setting show's end to requested end time for clean cut at midnight."
+                    show_end = end_time
                 programme.set('stop', show_end.strftime('%Y%m%d%H%M%S') + ' ' + self._tz)
                 # Get random programme data from EpgDataProvider based on channel genre and add it to the current programme
                 for lang in self._langs:
