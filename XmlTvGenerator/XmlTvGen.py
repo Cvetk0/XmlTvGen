@@ -151,7 +151,7 @@ class XmlTvGen(object):
         # Add icon element if images option was selected    , do not allow duplicates
         if len(icon) > 0 and self._images:
             if not self._find_item(parent, 'icon', icon):
-                x_icon = SubElement(parent, 'icon')
+                x_icon = SubElement(parent, 'icon', {'lang': language})
                 x_icon.set('src', icon)
         # Add director elements, do not allow duplicates
         if len(directors) > 0:
